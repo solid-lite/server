@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Welcome to Solid-Lite!');
+  res.sendFile(path.resolve('./profile.html'));
 });
 
 app.get('/resource/:id', (req, res) => {
