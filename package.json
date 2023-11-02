@@ -1,6 +1,6 @@
 {
   "name": "solid-lite",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "server",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,5 @@
     "url": "https://github.com/solid-lite/server/issues"
   },
   "homepage": "https://github.com/solid-lite/server#readme",
-  "dependencies": {
-  }
+  "dependencies": {}
 }
