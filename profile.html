@@ -48,6 +48,41 @@
         padding: 0 20px 20px;
       }
     </style>
+    <script type="application/ld+json">
+      {
+        "@context": "http://w3id.org/webid",
+        "@id": "",
+        "primaryTopic": {
+          "@id": "#me",
+          "@type": "Person",
+          "name": "Ace Ventural",
+          "img": "https://user-images.githubusercontent.com/65864/280053131-30aa0f8f-06b6-47a8-a148-120c280b8af9.png",
+          "knows": "http://alice.example/#me",
+          "publickey": "1234abc",
+          "description": "Pet Detective"
+        }
+      }
+    </script>
+    <script type="module">
+      document.addEventListener('DOMContentLoaded', () => {
+        // Select the structured data script tag and parse its content
+        const structuredData = document.querySelector(
+          'script[type="application/ld+json"]'
+        )
+        const data = JSON.parse(structuredData.textContent)
+        const { primaryTopic } = data
+
+        // Select the image and name elements on the page
+        const profileImage = document.querySelector('.profile-card img')
+        const profileName = document.querySelector('.profile-card h1')
+        const profileDescription = document.querySelector('.profile-card p')
+
+        // Set the image source and profile name content
+        profileImage.src = primaryTopic.img
+        profileName.textContent = primaryTopic.name
+        profileDescription.textContent = primaryTopic.description
+      })
+    </script>
   </head>
 
   <body>
@@ -57,8 +92,8 @@
           src="https://user-images.githubusercontent.com/65864/280053131-30aa0f8f-06b6-47a8-a148-120c280b8af9.png"
           alt="Profile Image"
         />
-        <h1>John Doe</h1>
-        <p>Web Developer</p>
+        <h1>Ace Ventura</h1>
+        <p>Pet Detective</p>
       </div>
     </div>
   </body>
