@@ -30,6 +30,14 @@ if (!fs.existsSync(defaultFilePath)) {
   fs.copySync(path.join(__dirname, 'profile.html'), defaultFilePath);
 }
 
+app.use(cors())
+
+app.use(express.text()); // Add this line to handle text/plain content type
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} Request to ${req.originalUrl}`);
+  console.log('Body:', req.body);
+  next();
+});
 
 // CRUD operations
 
@@ -57,20 +65,23 @@ app.get('/data/:filename?', (req, res) => {
   }
 });
 
-// UPDATE: Update an existing file
-app.put('/data/:filename', (req, res) => {
+// CREATE or UPDATE: Upload or update a file
+app.put('/:filename', (req, res) => {
   const { filename } = req.params;
   const filePath = path.join(dataDirectory, filename);
-  if (fs.existsSync(filePath)) {
-    fs.outputFileSync(filePath, req.body.content);
-    res.send('File updated successfully.');
-  } else {
-    res.status(404).send('File not found.');
-  }
+
+  fs.outputFile(filePath, req.body, err => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('An error occurred while writing the file.');
+    } else {
+      res.send('File created/updated successfully.');
+    }
+  });
 });
 
 // DELETE: Delete a file
-app.delete('/data/:filename', (req, res) => {
+app.delete('/:filename', (req, res) => {
   const { filename } = req.params;
   const filePath = path.join(dataDirectory, filename);
   if (fs.existsSync(filePath)) {
@@ -80,6 +91,7 @@ app.delete('/data/:filename', (req, res) => {
     res.status(404).send('File not found.');
   }
 });
+
 
 // Start the server
 const PORT = process.env.PORT || 3111;
