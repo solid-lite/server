@@ -1,47 +1,88 @@
 #!/usr/bin/env node
 
 import express from 'express';
-import bodyParser from 'body-parser';
+import cors from 'cors';
+import fs from 'fs-extra';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
-const port = process.env.PORT || 3100;
+const dataDirectory = path.join(__dirname, 'data');
+const defaultFile = path.join(__dirname, 'profile.html');
 
-app.use(bodyParser.json());
-app.use((req, res, next) => {
-  // Enable CORS
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,PUT,DELETE,POST');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  next();
+// Enable JSON and URL Encoded parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from the data directory at the root URL
+app.use(express.static(dataDirectory));
+
+// Ensure data directory exists
+fs.ensureDirSync(dataDirectory);
+const defaultFilePath = path.join(dataDirectory, 'index.html'); // Path for index.html in the data directory
+if (!fs.existsSync(defaultFilePath)) {
+  // Copy profile.html to index.html if index.html does not exist
+  fs.copySync(path.join(__dirname, 'profile.html'), defaultFilePath);
+}
+
+
+// CRUD operations
+
+// CREATE: Upload a new file
+app.post('/data/:filename', (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(dataDirectory, filename);
+  fs.outputFileSync(filePath, req.body.content);
+  res.status(201).send('File created successfully.');
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.resolve('./profile.html'));
+// READ: Get a list of files or a specific file
+app.get('/data/:filename?', (req, res) => {
+  const { filename } = req.params;
+  if (filename) {
+    const filePath = path.join(dataDirectory, filename);
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).send('File not found.');
+    }
+  } else {
+    const files = fs.readdirSync(dataDirectory);
+    res.json(files);
+  }
 });
 
-app.get('/resource/:id', (req, res) => {
-  const { id } = req.params;
-  // Implement logic to retrieve the resource by ID
-  res.json({
-    '@context': 'http://example.org/context/v1',
-    '@id': `http://example.org/resource/${id}`,
-    // other fields...
-  });
+// UPDATE: Update an existing file
+app.put('/data/:filename', (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(dataDirectory, filename);
+  if (fs.existsSync(filePath)) {
+    fs.outputFileSync(filePath, req.body.content);
+    res.send('File updated successfully.');
+  } else {
+    res.status(404).send('File not found.');
+  }
 });
 
-app.put('/resource/:id', (req, res) => {
-  const { id } = req.params;
-  const { body } = req;
-  // Implement logic to update or create the resource with the given ID
-  res.json({ message: 'Resource updated successfully!' });
+// DELETE: Delete a file
+app.delete('/data/:filename', (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(dataDirectory, filename);
+  if (fs.existsSync(filePath)) {
+    fs.removeSync(filePath);
+    res.send('File deleted successfully.');
+  } else {
+    res.status(404).send('File not found.');
+  }
 });
 
-app.delete('/resource/:id', (req, res) => {
-  const { id } = req.params;
-  // Implement logic to delete the resource with the given ID
-  res.json({ message: 'Resource deleted successfully!' });
-});
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Start the server
+const PORT = process.env.PORT || 3111;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
