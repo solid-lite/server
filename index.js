@@ -175,7 +175,7 @@ app.use((req, res, next) => {
 // CRUD operations
 
 // CREATE: Upload a new file
-app.post('/data/:filename', (req, res) => {
+app.post('/:filename', (req, res) => {
   const { filename } = req.params
   const filePath = path.join(dataDirectory, filename)
   fs.outputFileSync(filePath, req.body.content)
@@ -184,7 +184,7 @@ app.post('/data/:filename', (req, res) => {
 
 // HEAD: Retrieve the headers of a file
 // HEAD: Retrieve the headers of a file
-app.head('/data/:filename', (req, res) => {
+app.head('/:filename', (req, res) => {
   const { filename } = req.params
   const filePath = path.join(dataDirectory, filename)
 
